@@ -1,4 +1,5 @@
 set shell := ["bash", "-uc"]
+set positional-arguments
 
 # Run full canonical verification
 check: lint typecheck secrets test
@@ -18,7 +19,7 @@ typecheck:
 
 # Run offline test suite
 test *args:
-    uv run pytest {{ args }}
+    uv run pytest "$@"
 
 # Secret scan using gitleaks
 secrets:
@@ -31,7 +32,7 @@ sanitize-fixture file:
 
 # Run price monitoring pipeline
 run *args:
-    uv run python run.py {{ args }}
+    uv run python run.py "$@"
 
 # Validate output latest_report.json against schema
 validate:
