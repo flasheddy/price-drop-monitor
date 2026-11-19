@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "price_report.schema.json",
+  "title": "Daily Price Drop Monitor Report",
+  "description": "Output of the price monitoring pipeline (data/latest_report.json). One file per run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generated_at", "results", "alerts"],
+  "properties": {
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp with timezone offset for the pipeline run."
+    },
+    "results": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/result" }
+    },
+    "alerts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/alert" }
+    }
+  },
+  "$defs": {
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "product_id",
+        "name",
+        "category",
+        "url",
+        "source_type",
+        "target_price",
+        "old_price",
+        "current_price",
+        "currency",
+        "status",
+        "triggered_alert",
+        "error_message",
+        "checked_at"
+      ],
+      "properties": {
+        "product_id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "category": {
+          "type": "string",
+          "enum": ["cycling_gear", "tech_hardware", "software_deal"]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https?://"
+        },
+        "source_type": {
+          "type": "string",
+          "enum": ["jsonld", "dom", "json_api"]
+        },
+        "target_price": { "type": "number", "exclusiveMinimum": 0 },
+        "old_price": { "type": ["number", "null"], "minimum": 0 },
+        "current_price": { "type": ["number", "null"], "minimum": 0 },
+        "currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+        "status": { "type": "string", "enum": ["ok", "error"] },
+        "triggered_alert": { "type": "boolean" },
+        "error_message": { "type": ["string", "null"] },
+        "checked_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "alert": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "product_id",
+        "name",
+        "category",
+        "url",
+        "old_price",
+        "new_price",
+        "target_price",
+        "currency",
+        "savings"
+      ],
+      "properties": {
+        "product_id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "category": {
+          "type": "string",
+          "enum": ["cycling_gear", "tech_hardware", "software_deal"]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https?://"
+        },
+        "old_price": { "type": ["number", "null"], "minimum": 0 },
+        "new_price": { "type": "number", "minimum": 0 },
+        "target_price": { "type": "number", "exclusiveMinimum": 0 },
+        "currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+        "savings": { "type": ["number", "null"], "minimum": 0 }
+      }
+    }
+  }
+}
