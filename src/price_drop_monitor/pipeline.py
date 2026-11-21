@@ -41,12 +41,7 @@ def _load_watchlist(
     if not config.offline and sheets_adapter is not None:
         return sheets_adapter.fetch_watchlist()
 
-    watchlist_path = config.watchlist_path
-    if config.offline and not watchlist_path.is_file():
-        fallback = config.fixtures_dir / "watchlist_targets.csv"
-        watchlist_path.parent.mkdir(parents=True, exist_ok=True)
-        watchlist_path.write_text(fallback.read_text(encoding="utf-8"), encoding="utf-8")
-    return load_watchlist_csv(watchlist_path)
+    return load_watchlist_csv(config.watchlist_path)
 
 
 def _fetch_content(

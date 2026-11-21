@@ -108,10 +108,8 @@ class EmailNotifier:
                 server.login(self.smtp_user, self.smtp_app_password)
             server.send_message(message)
         finally:
-            quit_method = getattr(server, "quit", None)
-            if callable(quit_method):
-                with contextlib.suppress(smtplib.SMTPException, OSError):
-                    quit_method()
+            with contextlib.suppress(smtplib.SMTPException, OSError):
+                server.quit()
 
 
 class WebhookNotifier:
@@ -134,7 +132,6 @@ class WebhookNotifier:
         if self._client is None:
             with httpx.Client(timeout=30.0) as client:
                 response = client.post(self.webhook_url, json=payload)
-                response.raise_for_status()
-            return
-        response = self._client.post(self.webhook_url, json=payload)
+        else:
+            response = self._client.post(self.webhook_url, json=payload)
         response.raise_for_status()

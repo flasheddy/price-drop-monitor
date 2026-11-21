@@ -1,0 +1,4 @@
+product_id,name,category,url,target_price,old_price,currency,source_type,fixture_file
+replace-me-tire,Example road tire,cycling_gear,https://shop.example/product/road-tire,60.00,75.00,USD,jsonld,
+replace-me-ssd,Example 2 TB NVMe SSD,tech_hardware,https://shop.example/product/nvme-ssd,150.00,180.00,USD,dom,
+replace-me-app,Example annual software license,software_deal,https://shop.example/api/price/app-license,200.00,250.00,USD,json_api,

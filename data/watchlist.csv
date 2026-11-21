@@ -1,6 +1,0 @@
-product_id,name,category,url,target_price,old_price,currency,source_type,fixture_file
-garmin-edge-840,Garmin Edge 840 Cycling Computer,cycling_gear,https://example.com/cycling/garmin-edge-840,399.00,449.99,USD,jsonld,cycling_garmin_edge.html
-conti-gp5000-str,Continental Grand Prix 5000 S TR 700x28c,cycling_gear,https://example.com/cycling/conti-gp5000-s-tr,70.00,79.95,USD,jsonld,cycling_gp5000_tire.html
-samsung-990-pro-2tb,Samsung 990 PRO 2TB PCIe 4.0 NVMe SSD,tech_hardware,https://example.com/hardware/samsung-990-pro-2tb,160.00,179.99,USD,dom,hardware_nvme_ssd.html
-keychron-q1-pro,Keychron Q1 Pro QMK Wireless Custom Mechanical Keyboard,tech_hardware,https://example.com/hardware/keychron-q1-pro,180.00,199.00,USD,dom,hardware_missing_price.html
-jetbrains-toolbox-deal,JetBrains All Products Pack Annual Deal,software_deal,https://example.com/software/jetbrains-all-products,220.00,289.00,USD,json_api,software_deal_api.json

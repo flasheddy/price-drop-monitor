@@ -9,8 +9,11 @@ from pathlib import Path
 # Keep the standalone CLI runnable with ``python run.py`` before the package is installed.
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
-from price_drop_monitor.models import MonitorConfig
+from price_drop_monitor.models import CheckStatus, MonitorConfig
 from price_drop_monitor.pipeline import run_pipeline
+
+DEFAULT_WATCHLIST = Path("data/watchlist.csv")
+OFFLINE_WATCHLIST = Path("tests/fixtures/watchlist_targets.csv")
 
 
 def _env(name: str) -> str | None:
@@ -32,8 +35,13 @@ def _smtp_port() -> int:
 
 
 def _build_config(args: argparse.Namespace) -> MonitorConfig:
+    watchlist_path = (
+        Path(args.watchlist)
+        if args.watchlist
+        else (OFFLINE_WATCHLIST if args.offline else DEFAULT_WATCHLIST)
+    )
     return MonitorConfig(
-        watchlist_path=Path(args.watchlist),
+        watchlist_path=watchlist_path,
         history_path=Path(args.history),
         output_path=Path(args.output),
         offline=bool(args.offline),
@@ -58,7 +66,14 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         action="store_true",
         help="Read sanitized fixtures from tests/fixtures instead of live URLs.",
     )
-    parser.add_argument("--watchlist", default="data/watchlist.csv", help="Watchlist CSV path.")
+    parser.add_argument(
+        "--watchlist",
+        default=None,
+        help=(
+            "Watchlist CSV path. Defaults to data/watchlist.csv, or "
+            "tests/fixtures/watchlist_targets.csv with --offline."
+        ),
+    )
     parser.add_argument("--history", default="data/price_history.csv", help="History CSV path.")
     parser.add_argument("--output", default="data/latest_report.json", help="JSON report path.")
     parser.add_argument(
@@ -75,7 +90,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     config = _build_config(args)
     report = run_pipeline(config)
 
-    ok_count = sum(1 for result in report.results if result.status == "ok")
+    ok_count = sum(1 for result in report.results if result.status == CheckStatus.OK)
     error_count = len(report.results) - ok_count
     print(
         f"Checked {len(report.results)} item(s): "

@@ -9,7 +9,7 @@ lint:
     uv run ruff check .
     uv run ruff format --check .
 
-# Auto-format source code and markdown code blocks
+# Auto-format Python sources
 fmt:
     uv run ruff format .
 
@@ -24,11 +24,6 @@ test *args:
 # Secret scan using gitleaks
 secrets:
     gitleaks dir . --no-banner --redact --log-level warn
-
-# Sanitize offline HTML fixture in-place and verify zero secrets
-sanitize-fixture file:
-    uv run python scripts/sanitize_fixture.py "{{ file }}"
-    gitleaks dir "{{ file }}" --no-banner --redact --log-level warn
 
 # Run price monitoring pipeline
 run *args:

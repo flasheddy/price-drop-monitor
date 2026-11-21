@@ -313,8 +313,13 @@ def test_google_sheets_adapter_sync_with_mock_transport() -> None:
 
 def test_pipeline_offline_end_to_end_and_schema_validation(tmp_path: Path) -> None:
     """Run all five fixtures offline and validate the generated report against the schema."""
+    watchlist_path = tmp_path / "watchlist.csv"
+    watchlist_path.write_text(
+        (FIXTURES_DIR / "watchlist_targets.csv").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
     config = MonitorConfig(
-        watchlist_path=tmp_path / "watchlist.csv",
+        watchlist_path=watchlist_path,
         history_path=tmp_path / "price_history.csv",
         output_path=tmp_path / "latest_report.json",
         fixtures_dir=FIXTURES_DIR,
@@ -338,9 +343,7 @@ def test_pipeline_offline_end_to_end_and_schema_validation(tmp_path: Path) -> No
     assert len(report.alerts) == 4
     assert all(alert.savings is not None for alert in report.alerts)
 
-    assert config.watchlist_path.is_file()
-    seeded = load_watchlist_csv(config.watchlist_path)
-    assert len(seeded) == 5
+    assert len(load_watchlist_csv(config.watchlist_path)) == 5
 
     with config.history_path.open(newline="", encoding="utf-8") as handle:
         history_rows = list(csv.DictReader(handle))

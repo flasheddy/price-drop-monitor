@@ -1,4 +1,4 @@
-"""Offline parser, sanitizer, and fail-closed model tests for price-drop-monitor."""
+"""Offline parser and fail-closed model tests for price-drop-monitor."""
 
 import json
 from pathlib import Path
@@ -13,7 +13,6 @@ from price_drop_monitor.extractors import (
     extract_jsonld_price,
 )
 from price_drop_monitor.models import CheckStatus, PriceCheckResult
-from scripts.sanitize_fixture import sanitize_html
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 
@@ -54,24 +53,6 @@ def test_html_fixtures_contain_expected_nodes() -> None:
     missing_html = (FIXTURES_DIR / "hardware_missing_price.html").read_text(encoding="utf-8")
     missing_tree = LexborHTMLParser(missing_html)
     assert missing_tree.css_first(".product-card .price-current") is None
-
-
-def test_sanitize_html_preserves_jsonld_and_strips_tracking() -> None:
-    """Verify sanitizer preserves JSON-LD product data while removing regular scripts/tokens."""
-    raw = (
-        "<html><head>"
-        '<script type="application/ld+json">{"@type":"Product","price":"10.00"}</script>'
-        "<script>alert('xss')</script>"
-        "</head><body>"
-        '<a href="https://example.com/item?utm_source=test" data-auth-token="dummy">Go</a>'
-        "</body></html>"
-    )
-    cleaned = sanitize_html(raw)
-    assert 'type="application/ld+json"' in cleaned
-    assert '"@type":"Product"' in cleaned
-    assert "alert('xss')" not in cleaned
-    assert "utm_source" not in cleaned
-    assert "data-auth-token" not in cleaned
 
 
 def test_extract_jsonld_top_level_product() -> None:

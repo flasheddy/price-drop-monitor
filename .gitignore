@@ -8,3 +8,9 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+
+# Personal watchlist and generated run artifacts
+data/watchlist.csv
+data/price_history.csv
+data/latest_report.json
+data/*.log

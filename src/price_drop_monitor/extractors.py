@@ -135,7 +135,7 @@ def extract_jsonld_price(html: str, default_currency: str = "USD") -> ExtractedP
             continue
         try:
             payload = json.loads(raw_payload)
-        except (json.JSONDecodeError, ValueError) as exc:
+        except ValueError as exc:
             parse_errors.append(str(exc))
             continue
 
@@ -184,26 +184,19 @@ def extract_dom_price(html: str, default_currency: str = "USD") -> ExtractedPric
     currency_element = tree.css_first(".product-card .price-currency")
     if currency_element is None:
         currency_element = tree.css_first(".price-currency")
-    resolved_currency = (
-        _currency_code(currency_element.text(strip=True)) if currency_element is not None else None
-    )
+    currency_text = currency_element.text(strip=True) if currency_element is not None else ""
+    resolved_currency = _currency_code(currency_text)
     if resolved_currency is None:
-        currency_text = (
-            currency_element.text(strip=True) if currency_element is not None else None
-        ) or ""
         for symbol, code in _SYMBOL_CURRENCIES:
-            if symbol in display_text:
+            if symbol in display_text or symbol in currency_text:
                 resolved_currency = code
                 break
-        if resolved_currency is None:
-            for symbol, code in _SYMBOL_CURRENCIES:
-                if symbol in currency_text:
-                    resolved_currency = code
-                    break
-    if resolved_currency is not None:
-        currency = resolved_currency
 
-    return ExtractedPrice(price=price, currency=currency, status=CheckStatus.OK)
+    return ExtractedPrice(
+        price=price,
+        currency=resolved_currency or currency,
+        status=CheckStatus.OK,
+    )
 
 
 def extract_json_api_price(payload: str, default_currency: str = "USD") -> ExtractedPrice:
@@ -211,7 +204,7 @@ def extract_json_api_price(payload: str, default_currency: str = "USD") -> Extra
     fallback_currency = _normalize_currency(default_currency, "USD")
     try:
         data = json.loads(payload)
-    except (json.JSONDecodeError, ValueError) as exc:
+    except ValueError as exc:
         return _error(f"Malformed JSON API payload: {exc}", fallback_currency)
     if not isinstance(data, dict):
         return _error("JSON API payload root must be an object", fallback_currency)

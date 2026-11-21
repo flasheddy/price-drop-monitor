@@ -1,17 +1,16 @@
-name: Daily Price Monitor
+name: Price Monitor
 
 on:
-  # Uncomment once real product URLs are configured in data/watchlist.csv or Google Sheets:
+  # Enable the daily run after configuring a watchlist (see README).
   # schedule:
-  #   # 13:00 UTC = 08:00 AM US Eastern during standard time.
   #   - cron: "0 13 * * *"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: daily-price-monitor
+  group: price-monitor
   cancel-in-progress: false
 
 jobs:
@@ -33,6 +32,21 @@ jobs:
       - name: Install pinned dependencies
         run: pip install -r requirements.txt
 
+      - name: Materialize watchlist
+        env:
+          WATCHLIST_CSV: ${{ secrets.WATCHLIST_CSV }}
+          GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.GOOGLE_SHEETS_SPREADSHEET_ID }}
+          GOOGLE_SHEETS_API_TOKEN: ${{ secrets.GOOGLE_SHEETS_API_TOKEN }}
+        run: |
+          if [ -n "$WATCHLIST_CSV" ]; then
+            printf '%s\n' "$WATCHLIST_CSV" > data/watchlist.csv
+          fi
+          if [ ! -f data/watchlist.csv ] \
+            && { [ -z "$GOOGLE_SHEETS_SPREADSHEET_ID" ] || [ -z "$GOOGLE_SHEETS_API_TOKEN" ]; }; then
+            echo "::error::No watchlist configured. Set WATCHLIST_CSV or both Google Sheets secrets."
+            exit 1
+          fi
+
       - name: Run price monitor
         env:
           GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.GOOGLE_SHEETS_SPREADSHEET_ID }}
@@ -48,14 +62,13 @@ jobs:
       - name: Validate report against schema
         run: python validate.py
 
-      - name: Commit updated history and report
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/price_history.csv data/latest_report.json
-          if git diff --cached --quiet; then
-            echo "No data changes to commit."
-          else
-            git commit -m "chore(data): update daily price history and report"
-            git push
-          fi
+      - name: Upload history and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: price-monitor-data
+          path: |
+            data/price_history.csv
+            data/latest_report.json
+          if-no-files-found: ignore
+          retention-days: 30
