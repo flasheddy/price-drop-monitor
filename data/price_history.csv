@@ -4,3 +4,8 @@ checked_at,product_id,name,category,current_price,target_price,currency,status,e
 2026-11-19T03:23:27+00:00,samsung-990-pro-2tb,Samsung 990 PRO 2TB PCIe 4.0 NVMe SSD,tech_hardware,149.99,160.00,USD,ok,,https://example.com/hardware/samsung-990-pro-2tb
 2026-11-19T03:23:27+00:00,keychron-q1-pro,Keychron Q1 Pro QMK Wireless Custom Mechanical Keyboard,tech_hardware,,180.00,USD,error,Price element '.price-current' not found in HTML,https://example.com/hardware/keychron-q1-pro
 2026-11-19T03:23:27+00:00,jetbrains-toolbox-deal,JetBrains All Products Pack Annual Deal,software_deal,199.00,220.00,USD,ok,,https://example.com/software/jetbrains-all-products
+2026-11-21T01:58:46+00:00,garmin-edge-840,Garmin Edge 840 Cycling Computer,cycling_gear,369.99,399.00,USD,ok,,https://example.com/cycling/garmin-edge-840
+2026-11-21T01:58:46+00:00,conti-gp5000-str,Continental Grand Prix 5000 S TR 700x28c,cycling_gear,62.50,70.00,USD,ok,,https://example.com/cycling/conti-gp5000-s-tr
+2026-11-21T01:58:46+00:00,samsung-990-pro-2tb,Samsung 990 PRO 2TB PCIe 4.0 NVMe SSD,tech_hardware,149.99,160.00,USD,ok,,https://example.com/hardware/samsung-990-pro-2tb
+2026-11-21T01:58:46+00:00,keychron-q1-pro,Keychron Q1 Pro QMK Wireless Custom Mechanical Keyboard,tech_hardware,,180.00,USD,error,Price element '.price-current' not found in HTML,https://example.com/hardware/keychron-q1-pro
+2026-11-21T01:58:46+00:00,jetbrains-toolbox-deal,JetBrains All Products Pack Annual Deal,software_deal,199.00,220.00,USD,ok,,https://example.com/software/jetbrains-all-products

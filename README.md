@@ -5,8 +5,8 @@ deals. It reads a watchlist, checks one price per product through JSON-LD, DOM, 
 extraction, appends an immutable history row, validates a schema-strict JSON snapshot, and sends
 one consolidated email/webhook alert when items fall strictly below target.
 
-- **Zero hosting cost:** runs on GitHub Actions at `0 13 * * *` UTC (08:00 AM US Eastern).
-- **Zero internal engines:** 100% public PyPI dependencies; no private workspace packages.
+- **Zero hosting cost:** runs on GitHub Actions on demand (`workflow_dispatch`) or on a daily cron schedule (`0 13 * * *` UTC).
+- **Minimal standalone stack:** built on `httpx`, `selectolax`, `pydantic`, and `jsonschema` with no external database required.
 - **Offline deterministic tests:** every parser, storage, alert, and pipeline test runs against
   sanitized fixtures with injected HTTP/SMTP doubles.
 - **Fail-closed prices:** a missing or unparsable price is recorded as `status="error"` with
@@ -17,26 +17,16 @@ one consolidated email/webhook alert when items fall strictly below target.
 
 ## 1. Daily Flow
 
-```text
-Watchlist (CSV or Google Sheets Tab 1)
-        |
-        v
-Fetch live URL or sanitized offline fixture
-        |
-        v
-Extract price (jsonld | dom | json_api)  -- failure --> status=error, price=null
-        |
-        v
-Append history CSV + optional Google Sheets Tab 2
-        |
-        v
-Evaluate strict current_price < target_price
-        |
-        v
-Write data/latest_report.json -> validate against docs/price_report.schema.json
-        |
-        v
-Send one consolidated SMTP email and/or webhook alert
+```mermaid
+flowchart TD
+    A["Watchlist (CSV or Google Sheets Tab 1)"] --> B["Fetch Live URL or Sanitized Fixture"]
+    B --> C["Extract Price (jsonld | dom | json_api)"]
+    C -- "Parse / HTTP failure" --> E["Fail-Closed Row (status=error, price=null)"]
+    C -- "Valid finite price" --> D["Append History CSV + Optional Sheets Tab 2"]
+    E --> D
+    D --> F["Evaluate Strict current_price < target_price"]
+    F --> G["Write data/latest_report.json & Validate Draft 2020-12 Schema"]
+    G --> H["Send Consolidated SMTP Email / Webhook Alert"]
 ```
 
 ## 2. Requirements
@@ -85,17 +75,17 @@ just run --watchlist path/to/watchlist.csv
 
 Columns:
 
-| Column         | Required | Example                              | Notes                                                    |
+| Column | Required | Example | Notes |
 | :------------- | :------- | :----------------------------------- | :------------------------------------------------------- |
-| `product_id`   | yes      | `garmin-edge-840`                    | Stable unique ID used in history and alerts.             |
-| `name`         | yes      | `Garmin Edge 840 Cycling Computer`   | Human-readable name, max 200 chars.                      |
-| `category`     | yes      | `cycling_gear`                       | `cycling_gear`, `tech_hardware`, or `software_deal`.     |
-| `url`          | yes      | `https://example.com/item`           | Must start with `http://` or `https://`.                 |
-| `target_price` | yes      | `399.00`                             | Alert only when the current price is strictly lower.     |
-| `old_price`    | no       | `449.99`                             | Used to calculate savings; blank is allowed.             |
-| `currency`     | no       | `USD`                                | Three-letter code; defaults to `USD`.                    |
-| `source_type`  | yes      | `jsonld`                             | `jsonld`, `dom`, or `json_api`.                          |
-| `fixture_file` | no       | `cycling_garmin_edge.html`           | Required only for offline fixture checks.                |
+| `product_id` | yes | `garmin-edge-840` | Stable unique ID used in history and alerts. |
+| `name` | yes | `Garmin Edge 840 Cycling Computer` | Human-readable name, max 200 chars. |
+| `category` | yes | `cycling_gear` | `cycling_gear`, `tech_hardware`, or `software_deal`. |
+| `url` | yes | `https://example.com/item` | Must start with `http://` or `https://`. |
+| `target_price` | yes | `399.00` | Alert only when the current price is strictly lower. |
+| `old_price` | no | `449.99` | Used to calculate savings; blank is allowed. |
+| `currency` | no | `USD` | Three-letter code; defaults to `USD`. |
+| `source_type` | yes | `jsonld` | `jsonld`, `dom`, or `json_api`. |
+| `fixture_file` | no | `cycling_garmin_edge.html` | Required only for offline fixture checks. |
 
 Example:
 
@@ -199,17 +189,17 @@ notification configuration is a no-op, so the report and history still persist.
 
 ## 7. CLI Reference
 
-| Command                                                          | Purpose                                                    |
+| Command | Purpose |
 | :--------------------------------------------------------------- | :--------------------------------------------------------- |
-| `just run --offline`                                             | Run against sanitized local fixtures with no network.      |
-| `just run`                                                       | Run live checks from the watchlist.                        |
-| `just run --send-alerts`                                         | Run live and dispatch configured alerts.                   |
+| `just run --offline` | Run against sanitized local fixtures with no network. |
+| `just run` | Run live checks from the watchlist. |
+| `just run --send-alerts` | Run live and dispatch configured alerts. |
 | `just run --watchlist data/watchlist.csv --history data/price_history.csv --output data/latest_report.json` | Override output paths. |
-| `just validate`                                                  | Validate the report against the Draft 2020-12 schema.      |
-| `just test`                                                      | Run the full offline pytest suite.                         |
-| `just check`                                                     | Run `ruff`, `basedpyright`, `gitleaks`, and `pytest`.       |
-| `just fmt`                                                       | Format Python sources with Ruff.                           |
-| `just sanitize-fixture tests/fixtures/page.html`                 | Sanitize an HTML fixture in place and secret-scan it.      |
+| `just validate` | Validate the report against the Draft 2020-12 schema. |
+| `just test` | Run the full offline pytest suite. |
+| `just check` | Run `ruff`, `basedpyright`, `gitleaks`, and `pytest`. |
+| `just fmt` | Format Python sources with Ruff. |
+| `just sanitize-fixture tests/fixtures/page.html` | Sanitize an HTML fixture in place and secret-scan it. |
 
 Direct Python equivalents are available when uv is not used:
 
@@ -223,8 +213,9 @@ python validate.py
 
 ## 8. GitHub Actions
 
-`.github/workflows/price_monitor.yml` runs daily at `0 13 * * *` UTC and on manual
-`workflow_dispatch`. It:
+`.github/workflows/price_monitor.yml` supports manual `workflow_dispatch` out of the box, with a
+daily `0 13 * * *` UTC cron trigger ready to uncomment once real product URLs are configured in
+`data/watchlist.csv` or Google Sheets. It:
 
 1. installs Python 3.11 and `requirements.txt`;
 2. runs `python run.py --send-alerts`;
@@ -233,16 +224,16 @@ python validate.py
 
 Add these repository secrets as needed:
 
-| Secret                           | Purpose                                   |
+| Secret | Purpose |
 | :------------------------------- | :---------------------------------------- |
-| `GOOGLE_SHEETS_SPREADSHEET_ID`   | Optional Google Sheets watchlist/history. |
-| `GOOGLE_SHEETS_API_TOKEN`        | Bearer token for Sheets REST v4.          |
-| `SMTP_HOST`                      | SMTP server hostname.                     |
-| `SMTP_PORT`                      | SMTP port, normally `587`.                |
-| `SMTP_USER`                      | SMTP username / from address.             |
-| `SMTP_APP_PASSWORD`              | SMTP app password.                        |
-| `ALERT_TO_EMAIL`                 | Recipient for consolidated alerts.        |
-| `WEBHOOK_ALERT_URL`              | ntfy/Discord/custom webhook endpoint.     |
+| `GOOGLE_SHEETS_SPREADSHEET_ID` | Optional Google Sheets watchlist/history. |
+| `GOOGLE_SHEETS_API_TOKEN` | Bearer token for Sheets REST v4. |
+| `SMTP_HOST` | SMTP server hostname. |
+| `SMTP_PORT` | SMTP port, normally `587`. |
+| `SMTP_USER` | SMTP username / from address. |
+| `SMTP_APP_PASSWORD` | SMTP app password. |
+| `ALERT_TO_EMAIL` | Recipient for consolidated alerts. |
+| `WEBHOOK_ALERT_URL` | ntfy/Discord/custom webhook endpoint. |
 
 Commit `data/watchlist.csv` when using the local CSV source, or configure the two Sheets secrets.
 The workflow requires `contents: write` permission (already declared) to push updated data.
@@ -314,9 +305,7 @@ report, and alerting.
 ├── validate.py                         # Draft 2020-12 schema gate
 ├── requirements.txt                    # pinned production dependencies
 ├── docs/
-│   ├── price_report.schema.json
-│   ├── project_brief.md
-│   └── specs/price_drop_monitor.md
+│   └── price_report.schema.json
 ├── src/price_drop_monitor/
 │   ├── models.py                       # Pydantic V2 models and enums
 │   ├── extractors.py                   # jsonld / dom / json_api extractors
@@ -349,7 +338,7 @@ report, and alerting.
 
 ## 14. Scope and Limitations
 
-This is a personal deal monitor and portfolio project. It does not use browser automation,
+This is a lightweight, self-hosted price monitoring and alerting pipeline. It does not use browser automation,
 proxy rotation, CAPTCHA solving, or an external database. Persistence is limited to CSV files,
 optional Google Sheets tabs, and JSON snapshots. Always respect retailer terms of service and
 rate limits.

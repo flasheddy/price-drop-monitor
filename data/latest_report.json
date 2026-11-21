@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-19T03:23:27+00:00",
+  "generated_at": "2026-11-21T01:58:46+00:00",
   "results": [
     {
       "product_id": "garmin-edge-840",
@@ -14,7 +14,7 @@
       "status": "ok",
       "triggered_alert": true,
       "error_message": null,
-      "checked_at": "2026-11-19T03:23:27+00:00"
+      "checked_at": "2026-11-21T01:58:46+00:00"
     },
     {
       "product_id": "conti-gp5000-str",
@@ -29,7 +29,7 @@
       "status": "ok",
       "triggered_alert": true,
       "error_message": null,
-      "checked_at": "2026-11-19T03:23:27+00:00"
+      "checked_at": "2026-11-21T01:58:46+00:00"
     },
     {
       "product_id": "samsung-990-pro-2tb",
@@ -44,7 +44,7 @@
       "status": "ok",
       "triggered_alert": true,
       "error_message": null,
-      "checked_at": "2026-11-19T03:23:27+00:00"
+      "checked_at": "2026-11-21T01:58:46+00:00"
     },
     {
       "product_id": "keychron-q1-pro",
@@ -59,7 +59,7 @@
       "status": "error",
       "triggered_alert": false,
       "error_message": "Price element '.price-current' not found in HTML",
-      "checked_at": "2026-11-19T03:23:27+00:00"
+      "checked_at": "2026-11-21T01:58:46+00:00"
     },
     {
       "product_id": "jetbrains-toolbox-deal",
@@ -74,7 +74,7 @@
       "status": "ok",
       "triggered_alert": true,
       "error_message": null,
-      "checked_at": "2026-11-19T03:23:27+00:00"
+      "checked_at": "2026-11-21T01:58:46+00:00"
     }
   ],
   "alerts": [
