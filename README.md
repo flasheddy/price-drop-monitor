@@ -1,5 +1,7 @@
 # Price Drop Monitor
 
+[![CI](https://github.com/flasheddy/price-drop-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/flasheddy/price-drop-monitor/actions/workflows/ci.yml)
+
 A small, self-hosted tracker for the products you actually watch. It reads a CSV or Google Sheet,
 extracts one price per product with JSON-LD, CSS, or JSON API logic, appends history, writes a
 schema-validated JSON report, and sends one consolidated alert when a price drops strictly below
@@ -27,7 +29,7 @@ flowchart TD
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```fish
-git clone https://github.com/you/price-drop-monitor.git
+git clone https://github.com/flasheddy/price-drop-monitor.git
 cd price-drop-monitor
 uv sync
 cp data/watchlist.example.csv data/watchlist.csv
